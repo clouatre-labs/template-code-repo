@@ -201,7 +201,7 @@ These steps replicate all controls to any new engagement repo under `github.com/
 
    *Code Snippet 7: Set the selected-actions allowlist. Add entries for any additional third-party actions the new repo uses.*
 
-5. Copy `.commitlintrc.yml` and add the `lint-commits` job to `ci.yml`. Set `Lint Commits` as a required status check in the branch ruleset alongside `Security Result` and `Lint markdown`. Do not add a separate branch-currency ("check-base") job — the ruleset's `strict_required_status_checks_policy: true` (Code Snippet 10) already enforces that the branch is up to date with main before merge, at zero Actions cost; a dedicated job to re-check it is redundant.
+5. Copy `.commitlintrc.yml` and add the `lint-commits` job feeding the `ci-result` aggregate job in `ci.yml`. Set `CI Result` as a required status check in the branch ruleset alongside `Security Result` and `Lint markdown`. Do not add a separate branch-currency ("check-base") job — the ruleset's `strict_required_status_checks_policy: true` (Code Snippet 10) already enforces that the branch is up to date with main before merge, at zero Actions cost; a dedicated job to re-check it is redundant.
 
    ```yaml
    lint-commits:
@@ -292,7 +292,7 @@ These steps replicate all controls to any new engagement repo under `github.com/
            "do_not_enforce_on_create": false,
            "required_status_checks": [
              { "context": "Security Result", "integration_id": null },
-             { "context": "Lint Commits", "integration_id": null },
+             { "context": "CI Result", "integration_id": null },
              { "context": "Lint markdown", "integration_id": null }
            ],
            "strict_required_status_checks_policy": true
@@ -338,7 +338,7 @@ These steps replicate all controls to any new engagement repo under `github.com/
 
    *Code Snippet 12: Copilot code review ruleset rule.*
 
-8. Open a PR with the copied files and merge it. Verify that the `Security Result` and `Lint Commits` checks appear and pass on the next PR. If the allowlist is incomplete, the security workflow will fail at job queue time with an action-not-allowed error before any code runs.
+8. Open a PR with the copied files and merge it. Verify that the `Security Result` and `CI Result` checks appear and pass on the next PR. If the allowlist is incomplete, the security workflow will fail at job queue time with an action-not-allowed error before any code runs.
 
 9. Enable `allow_auto_merge` so Renovate's `platformAutomerge: true` setting (Code Snippet 3) can queue merges once required checks pass. This is a repo setting, not tracked in git.
 
