@@ -1,0 +1,43 @@
+version = 1
+
+[[annotations]]
+path = ["docs/**/*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["scripts/**/*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [".github/**/*.yml", ".github/**/*.yaml", ".github/**/*.md", ".github/CODEOWNERS", ".github/renovate.json", ".github/**/*.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["*.md"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["*.toml", "*.json", "*.jsonc", "*.yml", "*.yaml"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["LICENSE", "README*", "CONTRIBUTING*", "SECURITY*", "CODE_OF_CONDUCT*", "AI_POLICY*", "GOVERNANCE*", "OBSERVABILITY*", "AGENTS*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [".gitignore", ".editorconfig", ".commitlintrc.yml"]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright © 2025 clouatre-labs"
+SPDX-License-Identifier = "Apache-2.0"

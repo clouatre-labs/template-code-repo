@@ -56,10 +56,26 @@ Squash merges produce a linear, readable commit history; each PR becomes one log
 
 Automatic branch deletion removes the source branch immediately after merge, eliminating stale branches and keeping the branch list manageable. If you need to retain a feature branch for reference, create a tag pointing to the branch's tip commit before merging.
 
+## CI contract
+
+The `CI Result` check in `.github/workflows/ci.yml` is the single required aggregate status check. It currently depends on `lint-commits` only; as language-specific jobs (lint, test, build) are added to the workflow, they must also be added to the `ci-result` `needs` array. Jobs skipped by path filters count as passing; any `failure` or `cancelled` result fails the aggregate. PRs are mergeable only when `CI Result` (and `Security Result`) pass.
+
+## Licensing (REUSE)
+
+Every new file must carry licensing information so the repository passes the [REUSE](https://reuse.software/) compliance check (`.github/workflows/reuse.yml`). Either add an SPDX header:
+
+```text
+// SPDX-FileCopyrightText: Copyright © 2025 clouatre-labs
+// SPDX-License-Identifier: Apache-2.0
+```
+
+or extend the matching `[[annotations]]` block in `REUSE.toml`. The full license text lives in `LICENSES/Apache-2.0.txt`.
+
 ## PR checklist
 
 - [ ] Linked issue in the PR description
 - [ ] Conventional commit messages with GPG sign and DCO sign-off
-- [ ] CI: security scan, markdown lint passing
+- [ ] CI: `CI Result` and `Security Result` passing, REUSE compliance green
+- [ ] New files carry SPDX headers or `REUSE.toml` annotations
 - [ ] No secrets or credentials introduced
 - [ ] Documentation updated where needed

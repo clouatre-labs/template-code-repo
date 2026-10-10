@@ -2,6 +2,10 @@
 
 This document maps every repo-level artifact to its purpose and the rationale behind non-obvious decisions. It is the checklist for replicating these controls in any repo created from this template.
 
+## Language-Neutral by Design
+
+This template ships without any language-specific configuration: no `Cargo.toml`, `package.json`, `deny.toml`, or toolchain files. When a language stack lands in an instantiated repo, add its build, lint, test, and dependency-policy configuration here and document the commands in `AGENTS.md`; wire the new jobs into the `ci-result` aggregate in `.github/workflows/ci.yml`.
+
 ## Artifact Map
 
 The table below covers all committed configuration artifacts. Issue templates, PR templates, and other non-security files are included for completeness; the security-relevant files are described in depth in [Security Hardening](#security-hardening).
@@ -9,6 +13,12 @@ The table below covers all committed configuration artifacts. Issue templates, P
 | Path | Purpose | Enforcement |
 |------|---------|-------------|
 | `AGENTS.md` | AI agent project context scaffold | repo |
+| `.github/workflows/reuse.yml` | FSFE reuse-action REUSE compliance check on pushes and PRs to `main` | repo |
+| `REUSE.toml` | SPDX copyright and license annotations for all repo files | repo |
+| `LICENSES/Apache-2.0.txt` | Full Apache-2.0 license text referenced by SPDX identifiers | repo |
+| `docs/diagrams/README.md` | Architecture diagram convention: diagram source committed alongside rendered `.svg` | repo |
+| `GOVERNANCE.md` | Governance stub (roles, decision process); exemplar: aptu-coder | repo |
+| `OBSERVABILITY.md` | Observability stub (logging, metrics, tracing); exemplar: aptu-coder | repo |
 | `.github/CODEOWNERS` | Org-standard review routing: `@clouatre-labs/maintainers` on all paths, `@clouatre-labs/security-reviewers` on workflows and `zizmor.yml` | repo |
 | `.github/copilot-instructions.md` | Copilot-specific agent instructions and PR review checklist | repo |
 | `.github/renovate.json` | Automated dependency updates via Renovate | repo |
@@ -30,7 +40,7 @@ The table below covers all committed configuration artifacts. Issue templates, P
 | `.editorconfig` | Editor formatting conventions (charset, line endings, indentation) | repo |
 | `.markdownlint.jsonc` | markdownlint rule configuration for Markdown linting | repo |
 | `AI_POLICY.md` | Policy on AI-assisted contributions and human accountability | repo |
-| `CONTRIBUTING.md` | Contribution guidelines | repo |
+| `CONTRIBUTING.md` | Contribution guidelines (DCO, Conventional Commits, CI contract, REUSE headers) | repo |
 | `SECURITY.md` | Vulnerability disclosure policy | repo |
 
 *Table 1: Committed configuration artifacts and their purpose.*
