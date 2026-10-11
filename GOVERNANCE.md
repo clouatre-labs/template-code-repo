@@ -4,13 +4,19 @@ Placeholder: flesh out as the project matures. See [aptu-coder/GOVERNANCE.md](ht
 
 ## Project model
 
-Solo-maintainer project hosted under the `clouatre-labs` GitHub organization.
+Project hosted under the `clouatre-labs` GitHub organization. Maintainership: {{MAINTAINERS}} — TODO: list maintainers and their GitHub handles.
 
 ## Roles
 
-- **Project owner**: holds organization-level GitHub access; final say on decisions, releases, and breaking changes.
+- **Maintainer**: {{MAINTAINERS}} — TODO: describe access level and responsibilities.
 - **Contributor**: anyone with a merged pull request.
 
 ## Decision process
 
-Input is welcome via issues and pull requests; the project owner makes final decisions. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
+Changes land via conventional commits and pull request review; a maintainer must approve before merge. TODO: document any additional decision rules as the team grows.
+
+## Escalation path
+
+Unresolved disputes go to {{MAINTAINERS}} — TODO: name the escalation contact and process (see the exemplar's access-continuity section).
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
