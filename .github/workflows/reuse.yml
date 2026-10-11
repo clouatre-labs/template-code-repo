@@ -16,6 +16,7 @@ permissions: {}
 
 jobs:
   reuse:
+    name: REUSE Compliance
     runs-on: ubuntu-26.04-arm
     permissions:
       contents: read
