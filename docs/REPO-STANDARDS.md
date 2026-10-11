@@ -2,6 +2,10 @@
 
 This document maps every repo-level artifact to its purpose and the rationale behind non-obvious decisions. It is the checklist for replicating these controls in any repo created from this template.
 
+## Language-Neutral by Design
+
+This template ships without any language-specific configuration: no `Cargo.toml`, `package.json`, `deny.toml`, or toolchain files. When a language stack lands in an instantiated repo, add its build, lint, test, and dependency-policy configuration here and document the commands in `AGENTS.md`; wire the new jobs into the `ci-result` aggregate in `.github/workflows/ci.yml`.
+
 ## Artifact Map
 
 The table below covers all committed configuration artifacts. Issue templates, PR templates, and other non-security files are included for completeness; the security-relevant files are described in depth in [Security Hardening](#security-hardening).
@@ -9,6 +13,12 @@ The table below covers all committed configuration artifacts. Issue templates, P
 | Path | Purpose | Enforcement |
 |------|---------|-------------|
 | `AGENTS.md` | AI agent project context scaffold | repo |
+| `.github/workflows/reuse.yml` | FSFE reuse-action REUSE compliance check on pushes and PRs to `main` | repo |
+| `REUSE.toml` | SPDX copyright and license annotations for all repo files | repo |
+| `LICENSES/Apache-2.0.txt` | Full Apache-2.0 license text referenced by SPDX identifiers | repo |
+| `docs/diagrams/README.md` | Architecture diagram convention: diagram source committed alongside rendered `.svg` | repo |
+| `GOVERNANCE.md` | Governance stub (roles, decision process); exemplar: aptu-coder | repo |
+| `OBSERVABILITY.md` | Observability stub (logging, metrics, tracing); exemplar: aptu-coder | repo |
 | `.github/CODEOWNERS` | Org-standard review routing: `@clouatre-labs/maintainers` on all paths, `@clouatre-labs/security-reviewers` on workflows and `zizmor.yml` | repo |
 | `.github/copilot-instructions.md` | Copilot-specific agent instructions and PR review checklist | repo |
 | `.github/renovate.json` | Automated dependency updates via Renovate | repo |
@@ -30,7 +40,7 @@ The table below covers all committed configuration artifacts. Issue templates, P
 | `.editorconfig` | Editor formatting conventions (charset, line endings, indentation) | repo |
 | `.markdownlint.jsonc` | markdownlint rule configuration for Markdown linting | repo |
 | `AI_POLICY.md` | Policy on AI-assisted contributions and human accountability | repo |
-| `CONTRIBUTING.md` | Contribution guidelines | repo |
+| `CONTRIBUTING.md` | Contribution guidelines (DCO, Conventional Commits, CI contract, REUSE headers) | repo |
 | `SECURITY.md` | Vulnerability disclosure policy | repo |
 
 *Table 1: Committed configuration artifacts and their purpose.*
@@ -111,11 +121,13 @@ jobs:
 
 *Code Snippet 3: `.github/renovate.json`. All policy (labels, release age, schedule, automerge groups) lives in the org shared preset `clouatre-labs/.github//default`; repos only reference it. To add repo-specific package rules, extend the preset locally instead of copying it.*
 
+**Labels.** Labels are managed org-wide, not per-repo: safe-settings in `clouatre-labs/.github` syncs the label set add/update-only to every repo in the org. Canonical labels reuse the Conventional Commits type vocabulary (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`) plus domain labels (`dependencies`, `security`); GitHub defaults (`bug`, `enhancement`, `documentation`) also exist and are safe to ignore. `scripts/bootstrap.sh` can recreate the baseline label set idempotently for a freshly created repo before the org sync lands.
+
 ## Non-obvious Decisions
 
 **Single `Security Result` job.** The main branch ruleset requires one status check named `Security Result`; both security controls (trufflehog, zizmor) run as sequential steps inside this one job rather than as separate jobs feeding an aggregator. The zizmor step is marked `if: always()` so it still runs and reports independently even if the trufflehog step fails; GitHub computes the job's overall pass/fail natively from step results, so no separate shell-based result-check step is needed. This keeps the ruleset stable the same way an aggregator design would: adding or removing a security tool requires only a change within `security.yml`, not an admin-only ruleset edit. Ruleset edits require admin access and are not tracked in git, so minimizing them reduces operational risk.
 
-**Job-count consolidation (`ci.yml`, `security.yml`).** On a small repo, real per-check compute is seconds, but each GitHub Actions job pays a fixed VM-boot-and-checkout cost regardless of how little work it does. The original design used 7 jobs per PR (`commitlint` → `check-base` → `ci-result`; `secrets` + `zizmor` → `security-result`; `lint`) to satisfy 3 required status checks. `check-base` (a full-history checkout solely to run `git merge-base` and fail the check if the branch was behind main) was redundant with the branch ruleset's own `strict_required_status_checks_policy: true`, which already enforces branch currency natively at zero Actions cost, so it was deleted outright. `commitlint` was folded directly into the `Lint Commits` job (renamed from `CI Result`, since with `check-base` gone the job no longer aggregates anything and the old name no longer described its single purpose), and `secrets`/`zizmor` were folded into sequential steps of the `Security Result` job. Net effect: 7 billed jobs per PR down to 3, identical protections (DCO sign-off, commit-message linting, secret scanning, workflow SHA-pin linting, branch-currency enforcement), and no ruleset edits beyond the one required-check rename. Trade-off: the GitHub PR Checks tab now shows three checks — `Lint Commits`, `Security Result`, and `Lint markdown` — rather than a separate entry per underlying tool — diagnosing which step failed means opening the job log instead of scanning the checks list. `check-base`'s custom out-of-date-branch error message is also gone, replaced by GitHub's native "Update branch" UI enforcement (same protection, different UX). See clouatre-labs/3pillar PR #76 for the origin of this pattern.
+**Job-count consolidation (`ci.yml`, `security.yml`).** This narrative recounts how decisions-judge-mcp evolved its own CI layout and is background only — it does not describe the required-check contract for this template (see "Aggregate `CI Result` check" below). In decisions-judge-mcp's history, a small repo paid a fixed VM-boot-and-checkout cost per GitHub Actions job regardless of how little work each did. Its original design used 7 jobs per PR (`commitlint` → `check-base` → `ci-result`; `secrets` + `zizmor` → `security-result`; `lint`) to satisfy 3 required status checks. `check-base` (a full-history checkout solely to run `git merge-base` and fail the check if the branch was behind main) was redundant with the branch ruleset's own `strict_required_status_checks_policy: true`, which already enforces branch currency natively at zero Actions cost, so it was deleted outright. `commitlint` was folded directly into the `Lint Commits` job (renamed from `CI Result`, since with `check-base` gone the job no longer aggregated anything and the old name no longer described its single purpose), and `secrets`/`zizmor` were folded into sequential steps of the `Security Result` job. Net effect there: 7 billed jobs per PR down to 3, identical protections (DCO sign-off, commit-message linting, secret scanning, workflow SHA-pin linting, branch-currency enforcement), and no ruleset edits beyond the one required-check rename. Trade-off: the GitHub PR Checks tab showed three checks — `Lint Commits`, `Security Result`, and `Lint markdown` — rather than a separate entry per underlying tool, so diagnosing which step failed meant opening the job log instead of scanning the checks list. `check-base`'s custom out-of-date-branch error message was also gone, replaced by GitHub's native "Update branch" UI enforcement (same protection, different UX). See clouatre-labs/3pillar PR #76 for the origin of this pattern. In this template, by contrast, the stable required status checks are the `CI Result` aggregate plus `Security Result` and `Lint markdown`; the check names are not renamed — adopters extend `CI Result` by adding job names to the `ci-result` job's `needs` array in `ci.yml`.
 
 **trufflehog `--only-verified` flag.** TruffleHog's detector set matches a broad set of patterns and generates false positives on test fixtures, redacted excerpts, and example strings embedded in documentation, which are common in an engagement repo that quotes API responses and config examples. `--only-verified` instructs TruffleHog to attempt live verification against the issuing service before reporting a finding; only credentials confirmed active are surfaced. This keeps the signal-to-noise ratio high enough that the job does not become routine noise to bypass.
 
@@ -186,12 +198,13 @@ These steps replicate all controls to any new engagement repo under `github.com/
      --field 'patterns_allowed[]=DavidAnson/markdownlint-cli2-action@*' \
      --field 'patterns_allowed[]=trufflesecurity/trufflehog@*' \
      --field 'patterns_allowed[]=zizmorcore/zizmor-action@*' \
+     --field 'patterns_allowed[]=fsfe/reuse-action@*' \
      --field 'patterns_allowed[]=ossf/scorecard-action@*'
    ```
 
    *Code Snippet 7: Set the selected-actions allowlist. Add entries for any additional third-party actions the new repo uses.*
 
-5. Copy `.commitlintrc.yml` and add the `lint-commits` job to `ci.yml`. Set `Lint Commits` as a required status check in the branch ruleset alongside `Security Result` and `Lint markdown`. Do not add a separate branch-currency ("check-base") job — the ruleset's `strict_required_status_checks_policy: true` (Code Snippet 10) already enforces that the branch is up to date with main before merge, at zero Actions cost; a dedicated job to re-check it is redundant.
+5. Copy `.commitlintrc.yml` and add the `lint-commits` job feeding the `ci-result` aggregate job in `ci.yml`. Set `CI Result` as a required status check in the branch ruleset alongside `Security Result` and `Lint markdown`. Do not add a separate branch-currency ("check-base") job — the ruleset's `strict_required_status_checks_policy: true` (Code Snippet 10) already enforces that the branch is up to date with main before merge, at zero Actions cost; a dedicated job to re-check it is redundant.
 
    ```yaml
    lint-commits:
@@ -282,7 +295,7 @@ These steps replicate all controls to any new engagement repo under `github.com/
            "do_not_enforce_on_create": false,
            "required_status_checks": [
              { "context": "Security Result", "integration_id": null },
-             { "context": "Lint Commits", "integration_id": null },
+             { "context": "CI Result", "integration_id": null },
              { "context": "Lint markdown", "integration_id": null }
            ],
            "strict_required_status_checks_policy": true
@@ -328,7 +341,7 @@ These steps replicate all controls to any new engagement repo under `github.com/
 
    *Code Snippet 12: Copilot code review ruleset rule.*
 
-8. Open a PR with the copied files and merge it. Verify that the `Security Result` and `Lint Commits` checks appear and pass on the next PR. If the allowlist is incomplete, the security workflow will fail at job queue time with an action-not-allowed error before any code runs.
+8. Open a PR with the copied files and merge it. Verify that the `Security Result` and `CI Result` checks appear and pass on the next PR. If the allowlist is incomplete, the security workflow will fail at job queue time with an action-not-allowed error before any code runs.
 
 9. Enable `allow_auto_merge` so Renovate's `platformAutomerge: true` setting (Code Snippet 3) can queue merges once required checks pass. This is a repo setting, not tracked in git.
 
