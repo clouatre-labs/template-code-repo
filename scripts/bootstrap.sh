@@ -84,7 +84,8 @@ gh api repos/$REPO/rulesets -X POST \
         "required_status_checks": [
           {"context": "CI Result", "integration_id": null},
           {"context": "Security Result", "integration_id": null},
-          {"context": "Lint markdown", "integration_id": null}
+          {"context": "Lint markdown", "integration_id": null},
+          {"context": "REUSE Compliance", "integration_id": null}
         ]
       }
     }
