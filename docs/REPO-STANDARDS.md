@@ -121,6 +121,8 @@ jobs:
 
 *Code Snippet 3: `.github/renovate.json`. All policy (labels, release age, schedule, automerge groups) lives in the org shared preset `clouatre-labs/.github//default`; repos only reference it. To add repo-specific package rules, extend the preset locally instead of copying it.*
 
+**Labels.** Labels are managed org-wide, not per-repo: safe-settings in `clouatre-labs/.github` syncs the label set add/update-only to every repo in the org. Canonical labels reuse the Conventional Commits type vocabulary (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`) plus domain labels (`dependencies`, `security`); GitHub defaults (`bug`, `enhancement`, `documentation`) also exist and are safe to ignore. `scripts/bootstrap.sh` can recreate the baseline label set idempotently for a freshly created repo before the org sync lands.
+
 ## Non-obvious Decisions
 
 **Single `Security Result` job.** The main branch ruleset requires one status check named `Security Result`; both security controls (trufflehog, zizmor) run as sequential steps inside this one job rather than as separate jobs feeding an aggregator. The zizmor step is marked `if: always()` so it still runs and reports independently even if the trufflehog step fails; GitHub computes the job's overall pass/fail natively from step results, so no separate shell-based result-check step is needed. This keeps the ruleset stable the same way an aggregator design would: adding or removing a security tool requires only a change within `security.yml`, not an admin-only ruleset edit. Ruleset edits require admin access and are not tracked in git, so minimizing them reduces operational risk.
