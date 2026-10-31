@@ -30,7 +30,7 @@ The table below covers all committed configuration artifacts. Issue templates, P
 | `.github/workflows/security.yml` | Sequential trufflehog and zizmor steps in a single required `Security Result` job | repo |
 | `.github/workflows/scheduled-security-audit.yml` | Weekly scheduled zizmor security audit | repo |
 | `.commitlintrc.yml` | Conventional Commits ruleset for commitlint | repo |
-| `.github/workflows/scorecard.yml` | Weekly OpenSSF Scorecard analysis; skipped on private repos (`visibility == 'public'` gate), publishes SARIF to code scanning on public ones | repo |
+| `.github/workflows/scorecard.yml` | Weekly OpenSSF Scorecard analysis; skipped on private repos (`visibility == 'public'` gate), publishes SARIF to code scanning on public ones. Private repos may delete this file and `.github/scorecard-policy.yml`: the job can never run there | repo |
 | `.github/zizmor.yml` | zizmor suppression config for intentional patterns (e.g. `github.actor` gates); owned by security-reviewers via CODEOWNERS | repo |
 | `.github/aptu.yml` | aptu GitHub App configuration: automatic issue triage on new issues | repo |
 | `.github/scorecard-policy.yml` | Scorecard policy for SARIF output, mirroring the default bundled in ossf/scorecard-action | repo |
